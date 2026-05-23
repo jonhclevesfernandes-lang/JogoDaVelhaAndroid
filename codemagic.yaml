@@ -28,7 +28,7 @@ workflows:
             unzip -q "$CM_BUILD_DIR/gradle.zip" -d "$CM_BUILD_DIR"
           fi
 
-          "$CM_BUILD_DIR/gradle-$GRADLE_VERSION/bin/gradle" clean :app:assembleDebug --no-daemon
+          "$CM_BUILD_DIR/gradle-$GRADLE_VERSION/bin/gradle" :app:assembleDebug --no-daemon
 
     artifacts:
       - app/build/outputs/apk/debug/*.apk
