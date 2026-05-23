@@ -3,33 +3,25 @@ workflows:
     name: Android Debug APK
     max_build_duration: 60
     instance_type: mac_mini_m2
+
     environment:
       java: 17
-      vars:
-        GRADLE_VERSION: "8.9"
+
     cache:
       cache_paths:
         - ~/.gradle/caches
         - ~/.gradle/wrapper
         - ~/.android/build-cache
+
     scripts:
       - name: Set Android SDK location
         script: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
-      - name: Accept Android SDK licenses and install SDK 35
-  script: |
-    export ANDROID_HOME=/usr/local/share/android-sdk
-    export ANDROID_SDK_ROOT=$ANDROID_HOME
-    export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
 
-    yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-    "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
-      - name: Download Gradle and build debug APK
+      - name: Build debug APK
         script: |
-          if [ ! -d "gradle-$GRADLE_VERSION" ]; then
-            curl -sL "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" -o gradle.zip
-            unzip -q gradle.zip
-          fi
-          ./gradle-$GRADLE_VERSION/bin/gradle :app:assembleDebug --no-daemon --stacktrace
+          chmod +x ./gradlew
+          ./gradlew clean :app:assembleDebug
+
     artifacts:
       - app/build/outputs/apk/debug/*.apk
