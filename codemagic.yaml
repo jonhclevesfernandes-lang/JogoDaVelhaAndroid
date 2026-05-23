@@ -6,22 +6,29 @@ workflows:
 
     environment:
       java: 17
+      vars:
+        GRADLE_VERSION: "8.9"
 
     cache:
       cache_paths:
         - ~/.gradle/caches
         - ~/.gradle/wrapper
-        - ~/.android/build-cache
 
     scripts:
       - name: Set Android SDK location
         script: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          echo "sdk.dir=$SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+          echo "Using Android SDK at: $SDK_ROOT"
 
-      - name: Build debug APK
+      - name: Download Gradle and build debug APK
         script: |
-          chmod +x ./gradlew
-          ./gradlew clean :app:assembleDebug
+          if [ ! -d "$CM_BUILD_DIR/gradle-$GRADLE_VERSION" ]; then
+            curl -sL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o "$CM_BUILD_DIR/gradle.zip"
+            unzip -q "$CM_BUILD_DIR/gradle.zip" -d "$CM_BUILD_DIR"
+          fi
+
+          "$CM_BUILD_DIR/gradle-$GRADLE_VERSION/bin/gradle" clean :app:assembleDebug --no-daemon
 
     artifacts:
       - app/build/outputs/apk/debug/*.apk
